@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1001 Classical｜一千零一张古典必听录音地图</title>
+<meta name="description" content="按时期、体裁、作曲家与心情进入古典音乐史。100+ 张标杆录音，每张配中文导读与合法试听跳转。参考 Matthew Rye《1001 Classical Recordings You Must Hear Before You Die》。">
+<meta name="theme-color" content="#0b0d13">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Noto+Serif+SC:wght@400;600;700&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="#/">
+    <span class="brand-mark">1001</span>
+    <span class="brand-text">
+      <span class="brand-title">CLASSICAL</span>
+      <span class="brand-sub">一千零一张古典必听录音地图</span>
+    </span>
+  </a>
+  <nav class="site-nav">
+    <a href="#/eras">时期</a>
+    <a href="#/genres">体裁</a>
+    <a href="#/artists">作曲家</a>
+    <a href="#/moods">心情</a>
+    <a href="#/instruments">编制</a>
+    <a href="#/all">全部录音</a>
+    <a href="#/about">关于</a>
+  </nav>
+  <div class="nav-search">
+    <input id="globalSearch" type="search" placeholder="搜索作品 / 作曲家 / 演绎…" autocomplete="off">
+  </div>
+</header>
+
+<main id="app"><!-- 路由内容 --></main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <p class="footer-title">1001 Classical · 聆听地图</p>
+    <p class="footer-meta">古典音乐策展项目，不托管任何音乐文件 · <a href="#/about">关于本站与说明 →</a></p>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="composers.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

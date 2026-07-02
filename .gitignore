@@ -1,0 +1,15 @@
+# OS / editor / tooling
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+.claude/
+
+# logs / deps (future use)
+node_modules/
+npm-debug.log*
+.cache/
+dist/
+
+# _build.mjs (data source) is intentionally committed for reproducibility
