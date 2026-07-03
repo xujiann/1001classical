@@ -207,6 +207,8 @@ main{max-width:1180px;margin:0 auto;padding:clamp(1.4rem,4vw,3rem) clamp(1rem,4v
 .facts dt{font-family:var(--label);letter-spacing:.08em;color:var(--ink-mute);font-size:.82rem;text-transform:uppercase}
 .facts dd{color:var(--ink)}
 .facts dd a{color:var(--gold-soft);border-bottom:1px dotted var(--line)}
+.facts dd.perf-links{line-height:1.9}
+.facts dd .perf-dot{color:var(--ink-mute)}
 .reason{background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--gold);
   border-radius:0 12px 12px 0;padding:1.1rem 1.3rem;margin:1.3rem 0;font-size:1.04rem;color:var(--ink-soft)}
 .reason h4{font-family:var(--label);letter-spacing:.15em;color:var(--gold);font-size:.8rem;margin-bottom:.5rem;text-transform:uppercase}

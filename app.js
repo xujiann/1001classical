@@ -360,6 +360,7 @@
         <div class="tile" onclick="location.hash='#/eras'"><div class="t-k">BY ERA</div><h3>按时期</h3><p>${ERAS.length} 个时期，从中世纪素歌到当代简约主义。</p></div>
         <div class="tile" onclick="location.hash='#/genres'"><div class="t-k">BY GENRE</div><h3>按体裁</h3><p>交响曲、协奏曲、歌剧、室内乐、独奏、合唱…</p></div>
         <div class="tile" onclick="location.hash='#/artists'"><div class="t-k">BY COMPOSER</div><h3>按作曲家</h3><p>巴赫、莫扎特、贝多芬、马勒、肖斯塔科维奇…</p></div>
+        <div class="tile" onclick="location.hash='#/performers'"><div class="t-k">BY ARTIST</div><h3>按名家</h3><p>卡拉扬、卡拉斯、古尔德、里希特、伯恩斯坦…</p></div>
         <div class="tile" onclick="location.hash='#/moods'"><div class="t-k">BY MOOD</div><h3>按心情</h3><p>夜晚、沉思、激昂、疗愈、庄严、壮丽…</p></div>
         <div class="tile" onclick="location.hash='#/instruments'"><div class="t-k">BY FORCES</div><h3>按编制</h3><p>管弦乐团、钢琴、小提琴、人声、合唱、四重奏…</p></div>
         <div class="tile" onclick="location.hash='#/all'"><div class="t-k">EVERYTHING</div><h3>全部录音</h3><p>${ALBUMS.length} 张录音，可搜索可筛选。</p></div>
@@ -481,6 +482,40 @@
     return `${crumb()}${artistHero(a)}${head}${grid(list)}`;
   }
 
+  /* ---------- 名家（指挥 / 独奏 / 乐团 / 合唱团） ---------- */
+  // perf 串以「 · 」分隔多位演绎者；解析成独立个体，供按名家浏览
+  function perfList(a){ return String(a.perf||"").split("·").map(s=>s.trim()).filter(Boolean); }
+  let _perfIdx=null;
+  function performerIndex(){
+    if(_perfIdx) return _perfIdx;
+    const m={};
+    ALBUMS.forEach(a=>perfList(a).forEach(p=>{ (m[p]=m[p]||[]).push(a); }));
+    return (_perfIdx=m);
+  }
+  function performersPage(){
+    const m=performerIndex();
+    // 收录 ≥2 张的名家进入索引（仅 1 张的仍可从录音详情页点入）
+    const names=Object.keys(m).filter(n=>m[n].length>=2)
+      .sort((a,b)=> m[b].length-m[a].length || a.localeCompare(b));
+    const tiles=names.map(n=>
+      `<div class="tile" data-search="${esc(n.toLowerCase())}" onclick="location.hash='#/performer/${enc(n)}'">
+        <div class="t-k">ARTIST</div><h3>${esc(n)}</h3><div class="cnt">${m[n].length} 张 →</div></div>`).join("");
+    return `${crumb()}<div class="section-head"><h2>按名家进入</h2><span class="tag">${names.length} 位 · 指挥 / 独奏 / 乐团</span></div>
+      <p class="muted" style="font-size:.82rem;margin:-.6rem 0 1rem">古典音乐是演绎的艺术——同一部作品，不同的指挥、独奏与乐团各有其不可替代之处。此处列出收录两张及以上的名家。</p>
+      <div class="artist-filter-bar">
+        <input id="artistFilter" type="search" placeholder="筛选指挥 / 独奏 / 乐团…" autocomplete="off" aria-label="筛选名家">
+        <span class="aff-count"><b id="artistShown">${names.length}</b> / ${names.length} 位</span>
+      </div>
+      <div class="tile-grid" id="artistGrid">${tiles}</div>
+      <p class="empty" id="artistEmpty" style="display:none">没有匹配的名家。</p>`;
+  }
+  function performerPage(name){
+    const m=performerIndex();
+    const list=(m[name]||[]).slice().sort((x,y)=>x.year-y.year);
+    if(!list.length) return notFound();
+    return `${crumb()}<div class="section-head"><h2>名家 · ${esc(name)}</h2><span class="tag">${list.length} recordings</span></div>${grid(list)}`;
+  }
+
   /* ---------- 心情 / 编制 ---------- */
   function moodsPage(){
     const tiles=window.MOODS.map(m=>{
@@ -546,7 +581,7 @@
         <div class="tags">${tagLinks(a.genres,"genre")}</div>
         <dl class="facts">
           ${tag("作曲家",composerZh(a.artist),`#/artist/${enc(a.artist)}`)}
-          ${tag("演绎",a.perf)}
+          ${a.perf?`<dt>演绎</dt><dd class="perf-links">${perfList(a).map(p=>`<a href="#/performer/${enc(p)}">${esc(p)}</a>`).join('<span class="perf-dot"> · </span>')}</dd>`:""}
           ${tag("录音年份",String(a.year))}
           ${tag("唱片公司",a.label)}
           ${tag("所属时期",e.name,`#/era/${a.era}`)}
@@ -588,7 +623,7 @@
 
       <section class="about-sec">
         <h2>怎么逛</h2>
-        <p>顶部导航提供多个入口：<a href="#/eras">按时期</a>（${eraN} 个历史时期，从中世纪到当代）、<a href="#/genres">按体裁</a>（交响曲、协奏曲、歌剧、室内乐…）、<a href="#/artists">按作曲家</a>、<a href="#/moods">按心情</a>、<a href="#/instruments">按编制</a>，以及<a href="#/all">全部录音</a>的全库搜索。每张录音详情页还会推荐同作曲家 / 同时期 / 同体裁的延伸聆听。</p>
+        <p>顶部导航提供多个入口：<a href="#/eras">按时期</a>（${eraN} 个历史时期，从中世纪到当代）、<a href="#/genres">按体裁</a>（交响曲、协奏曲、歌剧、室内乐…）、<a href="#/artists">按作曲家</a>、<a href="#/performers">按名家</a>（指挥、独奏与乐团——古典是演绎的艺术，卡拉扬、卡拉斯、古尔德们各有其不可替代之处）、<a href="#/moods">按心情</a>、<a href="#/instruments">按编制</a>，以及<a href="#/all">全部录音</a>的全库搜索。每张录音详情页还会推荐同作曲家 / 同时期 / 同体裁的延伸聆听。</p>
       </section>
 
       <section class="about-sec">
@@ -629,6 +664,8 @@
       case "genre": html=genrePage(parts[1]);break;
       case "artists": html=artistsPage();break;
       case "artist": html=artistPage(parts[1]);break;
+      case "performers": html=performersPage();break;
+      case "performer": html=performerPage(parts[1]);break;
       case "moods": html=moodsPage();break;
       case "mood": html=moodPage(parts[1]);break;
       case "instruments": html=instrumentsPage();break;
