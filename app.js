@@ -524,9 +524,18 @@
     // 收录 ≥2 张的名家进入索引（仅 1 张的仍可从录音详情页点入）
     const names=Object.keys(m).filter(n=>m[n].length>=2)
       .sort((a,b)=> m[b].length-m[a].length || a.localeCompare(b));
-    const tiles=names.map(n=>
-      `<div class="tile" data-search="${esc(n.toLowerCase())}" onclick="location.hash='#/performer/${enc(n)}'">
-        <div class="t-k">ARTIST</div><h3>${esc(n)}</h3><div class="cnt">${m[n].length} 张 →</div></div>`).join("");
+    const tiles=names.map(n=>{
+      const hasImg=!!((window.PORTRAITS||{})[n]);
+      return `<div class="tile${hasImg?" has-bio":""}" data-search="${esc(n.toLowerCase())}" onclick="location.hash='#/performer/${enc(n)}'">
+        <div class="tile-head">
+          <div class="tile-medal"${hasImg?` data-portrait="${esc(n)}"`:""}>
+            <span class="tm-mono">${esc(initials(n))}</span>
+            ${hasImg?`<img class="tm-photo" alt="${esc(n)} 肖像">`:""}
+          </div>
+          <div class="tile-head-txt"><div class="t-k">ARTIST</div><h3>${esc(n)}</h3></div>
+        </div>
+        <div class="cnt">${m[n].length} 张 →</div></div>`;
+    }).join("");
     return `${crumb()}<div class="section-head"><h2>按名家进入</h2><span class="tag">${names.length} 位 · 指挥 / 独奏 / 乐团</span></div>
       <p class="muted" style="font-size:.82rem;margin:-.6rem 0 1rem">古典音乐是演绎的艺术——同一部作品，不同的指挥、独奏与乐团各有其不可替代之处。此处列出收录两张及以上的名家。</p>
       <div class="artist-filter-bar">
