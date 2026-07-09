@@ -148,8 +148,12 @@
     imgEl.src=url;
     if(imgEl.complete && imgEl.naturalWidth) show();
   }
+  // 本地肖像优先（同源托管，中国大陆可靠）；缺失者再回退 Wikipedia
+  const localPortrait = name => (window.PORTRAITS||{})[name] || "";
   function loadPortrait(name,imgEl,medalEl){
     if(!imgEl) return;
+    const lp=localPortrait(name);
+    if(lp){ applyPortrait(imgEl,medalEl,lp); return; }
     if(name in portraitCache){ applyPortrait(imgEl,medalEl,portraitCache[name]); return; }
     const key="cart1:"+name, cached=lsGet(key);
     if(cached!==null){ portraitCache[name]=cached; applyPortrait(imgEl,medalEl,cached); return; }
@@ -170,6 +174,8 @@
   function wikiTitle(name){ return (BIOS[name]&&BIOS[name].wiki)||name; }
   function queuePortrait(name,imgEl,medalEl){
     if(!imgEl) return;
+    const lp=localPortrait(name);
+    if(lp){ applyPortrait(imgEl,medalEl,lp); return; }
     if(name in portraitCache){ applyPortrait(imgEl,medalEl,portraitCache[name]); return; }
     const cached=lsGet("cart1:"+name);
     if(cached!==null){ portraitCache[name]=cached; applyPortrait(imgEl,medalEl,cached); return; }
@@ -661,7 +667,7 @@
 
       <section class="about-sec legal">
         <h2>合法性原则</h2>
-        <p>本站<strong>不上传、不缓存、不下载、不托管任何音乐文件</strong>。"试听"按钮一律跳转到 网易云 / QQ音乐 / Spotify / Apple Music / YouTube / IDAGIO / 豆瓣 的搜索页，由各平台合法播放。唱片封面取自 iTunes 公共接口，作曲家肖像取自<strong>维基百科</strong>公共接口——二者均由客户端按需请求、本地缓存，加载失败时回退为程序化视觉或字母徽章。全部文字导读与小传为入门向介绍，仅供学习交流。</p>
+        <p>本站<strong>不上传、不缓存、不下载、不托管任何音乐文件</strong>。"试听"按钮一律跳转到 网易云 / QQ音乐 / Spotify / Apple Music / YouTube / IDAGIO / 豆瓣 的搜索页，由各平台合法播放。唱片封面取自 iTunes 公共接口按需请求；作曲家肖像来自<strong>维基百科 / 维基共享资源</strong>，已在构建期下载并随站点同源托管（以保证各地区稳定显示），少数无公开肖像者回退为字母徽章。全部文字导读与小传为入门向介绍，仅供学习交流。</p>
       </section>
 
       <section class="about-sec">
