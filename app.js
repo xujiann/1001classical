@@ -5,6 +5,10 @@
   const ALBUMS = window.ALBUMS, ERAS = window.ERAS;
   const BIOS = window.ARTIST_BIOS || {};
   const eraMap = Object.fromEntries(ERAS.map(e=>[e.key,e]));
+  const eraIdx = Object.fromEntries(ERAS.map((e,i)=>[e.key,i]));
+  const born = c => (BIOS[c]&&BIOS[c].born)||9999;
+  // 默认「年代顺序」：作品所属时期 → 作曲家生年 → 作曲家名 → 录音年
+  const chronoCmp = (a,b)=> (eraIdx[a.era]-eraIdx[b.era]) || (born(a.artist)-born(b.artist)) || a.artist.localeCompare(b.artist) || (a.year-b.year);
   const app = document.getElementById("app");
 
   /* ---------- 工具 ---------- */
@@ -230,6 +234,23 @@
       if(emptyEl) emptyEl.style.display=shown?"none":"";
     });
   }
+  // 全部录音页的即时排序：直接重排已渲染的卡片（读 data-* 属性）
+  function hydrateSort(){
+    const sel=document.getElementById("sortSel"); if(!sel) return;
+    const g=document.querySelector(".grid.cols"); if(!g) return;
+    const num=s=>parseInt(s,10)||0;
+    sel.addEventListener("change",()=>{
+      const cards=[...g.children], k=sel.value;
+      cards.sort((x,y)=>{
+        const dx=x.dataset,dy=y.dataset;
+        if(k==="year") return num(dy.y)-num(dx.y) || (dx.c||"").localeCompare(dy.c);
+        if(k==="composer") return (dx.c||"").localeCompare(dy.c) || num(dx.y)-num(dy.y);
+        if(k==="title") return (dx.t||"").localeCompare(dy.t,"zh");
+        return num(dx.e)-num(dy.e) || num(dx.b)-num(dy.b) || (dx.c||"").localeCompare(dy.c) || num(dx.y)-num(dy.y);
+      });
+      cards.forEach(c=>g.appendChild(c));
+    });
+  }
   function hydratePortraits(){
     document.querySelectorAll(".ah-medal[data-portrait],.fa-medal[data-portrait]").forEach(el=>{
       const img=el.querySelector("img");
@@ -270,7 +291,7 @@
   }
 
   function albumCard(a){
-    return `<article class="song-card" onclick="location.hash='#/album/${a.id}'">
+    return `<article class="song-card" data-y="${a.year}" data-b="${born(a.artist)}" data-e="${eraIdx[a.era]}" data-c="${esc(a.artist)}" data-t="${esc(workZh(a))}" onclick="location.hash='#/album/${a.id}'">
       ${coverHTML(a,false,true)}
       <div class="meta">
         <div class="s-title">${esc(workZh(a))}</div>
@@ -381,7 +402,7 @@
   }
   function eraPage(key){
     const e=eraMap[key]; if(!e) return notFound();
-    const list=ALBUMS.filter(a=>a.era===key);
+    const list=ALBUMS.filter(a=>a.era===key).slice().sort(chronoCmp);
     return `${crumb()}
       <div class="era-hero"><div class="yr">${e.years} · ${esc(e.keywords)}</div>
         <h1>${esc(e.name)}</h1><p>${esc(e.desc)}</p></div>
@@ -402,7 +423,7 @@
       <div class="tile-grid">${tiles}</div>`;
   }
   function genrePage(g){
-    const list=ALBUMS.filter(a=>a.genres.includes(g));
+    const list=ALBUMS.filter(a=>a.genres.includes(g)).slice().sort(chronoCmp);
     return `${crumb()}<div class="section-head"><h2>体裁 · ${esc(g)}</h2><span class="tag">${list.length} recordings</span></div>${grid(list)}`;
   }
 
@@ -525,7 +546,7 @@
     return `${crumb()}<div class="section-head"><h2>按心情进入</h2><span class="tag">Moods</span></div><div class="tile-grid">${tiles}</div>`;
   }
   function moodPage(m){
-    const list=ALBUMS.filter(a=>a.moods.includes(m));
+    const list=ALBUMS.filter(a=>a.moods.includes(m)).slice().sort(chronoCmp);
     return `${crumb()}<div class="section-head"><h2>心情 · ${esc(m)}</h2><span class="tag">${list.length} recordings</span></div>${grid(list)}`;
   }
   function instrumentsPage(){
@@ -538,7 +559,7 @@
     return `${crumb()}<div class="section-head"><h2>按编制进入</h2><span class="tag">Forces</span></div><div class="tile-grid">${tiles}</div>`;
   }
   function instrumentPage(i){
-    const list=ALBUMS.filter(a=>a.instruments.includes(i));
+    const list=ALBUMS.filter(a=>a.instruments.includes(i)).slice().sort(chronoCmp);
     return `${crumb()}<div class="section-head"><h2>编制 · ${esc(i)}</h2><span class="tag">${list.length} recordings</span></div>${grid(list)}`;
   }
 
@@ -550,10 +571,17 @@
       list=ALBUMS.filter(a=>(a.title+" "+a.zh+" "+a.artist+" "+a.perf+" "+a.label+" "+a.genres.join(" ")+" "+(eraMap[a.era]||{}).name+" "+((BIOS[a.artist]||{}).zh||""))
         .toLowerCase().includes(q));
     }
+    list=list.slice().sort(chronoCmp);
     const head=q
       ? `<div class="section-head"><h2>搜索 "${esc(q)}"</h2><span class="tag">${list.length} 个结果</span></div>`
       : `<div class="section-head"><h2>全部录音</h2><span class="tag">${list.length} recordings</span></div>`;
-    return `${crumb()}${head}${grid(list)}`;
+    const sortBar=list.length>1?`<div class="sort-bar"><label for="sortSel">排序</label><select id="sortSel">
+        <option value="chrono">年代顺序</option>
+        <option value="year">录音年份 · 新→旧</option>
+        <option value="composer">作曲家 A→Z</option>
+        <option value="title">曲名</option>
+      </select></div>`:"";
+    return `${crumb()}${head}${sortBar}${grid(list)}`;
   }
 
   /* ---------- 详情 ---------- */
@@ -638,7 +666,7 @@
 
       <section class="about-sec">
         <h2>技术栈</h2>
-        <p>纯静态单页网站，零构建、零后端、零第三方依赖：<code>index.html</code> 负责骨架与导航，<code>styles.css</code> 是暗色音乐厅视觉，<code>app.js</code> 实现 hash 路由、渲染、搜索与懒加载，<code>data.js</code> 存放策展录音数据，<code>composers.js</code> 存放作曲家小传（<code>window.ARTIST_BIOS</code>）。封面与肖像均用 IntersectionObserver 视口内才请求、并本地缓存。可一键部署到 GitHub Pages / Vercel / Cloudflare Pages。</p>
+        <p>纯静态单页网站，零构建、零后端、零第三方依赖：<code>index.html</code> 负责骨架与导航，<code>styles.css</code> 是暗色音乐厅视觉，<code>app.js</code> 实现 hash 路由、渲染、搜索与懒加载，<code>data.js</code> 存放策展录音数据，<code>composers.js</code> 存放作曲家小传（<code>window.ARTIST_BIOS</code>）。封面与肖像均用 IntersectionObserver 视口内才请求、并本地缓存。全部录音页支持按年代 / 录音年份 / 作曲家 / 曲名即时排序。本站还是一个 <strong>PWA</strong>——可"添加到主屏幕"离线浏览（Service Worker 采用网络优先策略，保证内容更新即时生效）。可一键部署到 GitHub Pages / Vercel / Cloudflare Pages。</p>
       </section>
 
       <section class="about-sec dev">
@@ -681,6 +709,7 @@
     hydrateCovers();
     hydratePortraits();
     hydrateArtistFilter();
+    hydrateSort();
   }
   window.addEventListener("hashchange",router);
   window.addEventListener("DOMContentLoaded",router);

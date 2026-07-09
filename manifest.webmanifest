@@ -1,0 +1,17 @@
+{
+  "name": "1001 Classical · 一千零一张古典必听录音",
+  "short_name": "1001 Classical",
+  "description": "按时期、体裁、作曲家、名家与心情进入九百年古典音乐史的策展式录音地图。",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b0d13",
+  "theme_color": "#0b0d13",
+  "categories": ["music", "education", "reference"],
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
